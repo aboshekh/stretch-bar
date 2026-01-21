@@ -1,0 +1,204 @@
+Stretch Bar
+
+A modern, gesture-driven bottom stretchable bar system for Android, inspired by One UI 7 behavior.
+Designed for smooth animations, stacked cards, and swipe-based interactions.
+
+✨ Features
+
+Bottom bars with collapsed & expanded states
+
+Stacked StretchBars with overlap effect
+
+Gesture support:
+
+Swipe up / down
+
+Swipe left / right
+
+Single tap
+
+Smooth ConstraintLayout + Transition animations
+
+Hardware-accelerated & RecyclerView-safe
+
+Fully customizable behavior per bar
+
+Clean Kotlin-first API
+
+## ⚙ Setup
+
+### 1️⃣Add it in your root settings.gradle at the end of repositories (If it hasn't been added yet)
+
+````kotlin
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+````
+
+### 2️⃣ implementation
+
+````kotlin
+implementation 'com.github.aboshekh:stretch-bar:v1.0.0'
+````
+
+## 🧱 Core Components
+
+### StretchBarContainer
+
+````kotlin
+val container = findViewById<StretchBarContainer>(R.id.stretchBarContainer)
+container.addUnderBar(myStretchBar, isAnimated = true)
+````
+
+A custom ConstraintLayout that manages stacked StretchBar views.
+
+Responsibilities:
+
+Stack management
+
+Swipe handling
+
+Expansion & collapse
+
+Focus switching
+
+Animations & vibration feedback
+
+### StretchBar
+
+Abstract base class representing a single expandable bar.
+
+You must provide:
+
+expandedConstraintSet
+
+collapsedConstraintSet
+
+````kotlin
+// This will be illustrated in the example below.
+class MyStretchBar(context: Context) : StretchBar(context) {
+
+    override val expandedConstraintSet = ConstraintSet().apply {
+        // expanded constraints
+    }
+
+    override val collapsedConstraintSet = ConstraintSet().apply {
+        // collapsed constraints
+    }
+
+}
+````
+
+### 🖐 Gestures
+
+Gesture Default Behavior
+Swipe Up Expand
+Swipe Down Collapse
+Swipe Left Callback
+Swipe Right Callback
+Single Tap Expand
+
+Override any behavior:
+
+````kotlin
+class MyStretchBar(context: Context) : StretchBar(context) {
+
+    override fun onCollapsedStart() {
+        super.onCollapsedStart()
+    }
+
+    override fun onExpandedStart() {
+        super.onExpandedStart()
+    }
+
+    override fun onCollapsedEnd() {
+        super.onCollapsedEnd()
+    }
+
+    override fun onExpandedEnd() {
+        super.onExpandedEnd()
+    }
+
+    override fun onSwipeLeft() {
+        super.onSwipeLeft()
+    }
+
+    override fun onSwipeRight() {
+        super.onSwipeRight()
+    }
+
+    /**
+     * Called on upward swipe gesture.
+     * Default behavior expands the StretchBar if it is collapsed.
+     */
+    override fun onSwipeUp() {
+        super.onSwipeUp()
+    }
+
+    /**
+     * Called on downward swipe gesture.
+     * Default behavior collapses the StretchBar if it is expanded.
+     */
+    override fun onSwipeDown() {
+        super.onSwipeDown()
+    }
+
+    /**
+     * Called when the user taps on the root view of this StretchBar.
+     * Default behavior expands the StretchBar if it is collapsed.
+     */
+    override fun onRootSingleTap() {
+        super.onRootSingleTap()
+    }
+
+}
+````
+
+### ⚙️ Customization
+
+````kotlin
+container.maxVisibleCards = 5
+container.overlapMargin = context.pxFromDp(6f)
+container.isVibrate = true
+````
+
+## 📂 Package Structure
+
+````text
+com.aboshekh.stretchbar
+│
+├── StretchBar.kt
+└── StretchBarContainer.kt
+````
+
+## 📄 License
+
+Copyright (c) 2026 Hassan Abdelaal
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## 💬 Contact
+
+For questions, suggestions, or collaboration:
+
+📧 **Email:** h.abdelaal.dev@gmail.com
