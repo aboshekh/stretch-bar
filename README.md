@@ -25,6 +25,10 @@ Fully customizable behavior per bar
 
 Clean Kotlin-first API
 
+<p align="center">
+  <img src="screen_recording_2.gif" width="300" />
+</p>
+
 ## ⚙ Setup
 
 ### 1️⃣Add it in your root settings.gradle at the end of repositories (If it hasn't been added yet)
@@ -165,6 +169,209 @@ container.maxVisibleCards = 5
 container.overlapMargin = context.pxFromDp(6f)
 container.isVibrate = true
 ````
+## Example
+
+### Stopwatch Stretch Bar
+````kotlin
+class StopwatchStretchBar(context: Context) : StretchBar(context) {
+
+    /* -------------------- UI -------------------- */
+
+    private val timerText = TextView(context).apply {
+        id = generateViewId()
+        gravity = TEXT_ALIGNMENT_CENTER
+        text = "00:00"
+        textSize = context.pxFromSp(18f).toFloat()
+        textAlignment = TEXT_ALIGNMENT_CENTER
+    }
+
+    private val playButton = Button(context).apply {
+        id = generateViewId()
+        text = "Start"
+        setOnClickListener { toggle() }
+    }
+
+    private val resetButton = Button(context).apply {
+        id = generateViewId()
+        text = "Reset"
+        setOnClickListener { reset() }
+    }
+
+    /* -------------------- Stopwatch Logic -------------------- */
+
+    private val handler = Handler(Looper.getMainLooper())
+
+    private var isRunning = false
+    private var startTime = 0L
+    private var elapsedTime = 0L
+
+    private val ticker = object : Runnable {
+        override fun run() {
+            elapsedTime = System.currentTimeMillis() - startTime
+            timerText.text = elapsedTime.formatToTime()
+            handler.postDelayed(this, 1000)
+        }
+    }
+
+    private fun start() {
+        startTime = System.currentTimeMillis() - elapsedTime
+        handler.post(ticker)
+        playButton.text = "Stop"
+        isRunning = true
+    }
+
+    private fun stop() {
+        handler.removeCallbacks(ticker)
+        playButton.text = "Start"
+        isRunning = false
+    }
+
+    private fun reset() {
+        stop()
+        elapsedTime = 0L
+        timerText.text = "00:00"
+    }
+
+    private fun toggle() {
+        if (isRunning) stop() else start()
+    }
+
+    /* -------------------- StretchBar -------------------- */
+
+    override val collapsedConstraintSet: ConstraintSet
+    override val expandedConstraintSet: ConstraintSet
+
+    init {
+        addView(timerText)
+        addView(playButton)
+        addView(resetButton)
+
+        playButton.layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT).apply {
+            topToBottom = timerText.id
+            startToStart = LayoutParams.PARENT_ID
+            endToStart = resetButton.id
+            setMargins(
+                context.pxFromDp(16f),
+                context.pxFromDp(32f),
+                context.pxFromDp(8f),
+                0
+            )
+        }
+
+        resetButton.layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT).apply {
+            topToBottom = timerText.id
+            startToEnd = playButton.id
+            endToEnd = LayoutParams.PARENT_ID
+            setMargins(
+                context.pxFromDp(8f),
+                context.pxFromDp(32f),
+                context.pxFromDp(16f),
+                0
+            )
+        }
+
+        collapsedConstraintSet = ConstraintSet().apply {
+            clone(this@StopwatchStretchBar)
+            connect(
+                timerText.id,
+                LayoutParams.TOP,
+                LayoutParams.PARENT_ID,
+                LayoutParams.TOP,
+                context.pxFromDp(16f)
+            )
+            connect(
+                timerText.id,
+                LayoutParams.START,
+                LayoutParams.PARENT_ID,
+                LayoutParams.START,
+                context.pxFromDp(24f)
+            )
+            connect(
+                timerText.id,
+                LayoutParams.END,
+                LayoutParams.PARENT_ID,
+                LayoutParams.END,
+                context.pxFromDp(24f)
+            )
+            connect(
+                timerText.id,
+                LayoutParams.BOTTOM,
+                LayoutParams.PARENT_ID,
+                LayoutParams.BOTTOM,
+                context.pxFromDp(16f)
+            )
+        }
+
+        expandedConstraintSet = ConstraintSet().apply {
+            clone(this@StopwatchStretchBar)
+            clear(timerText.id, LayoutParams.BOTTOM)
+            connect(
+                timerText.id,
+                LayoutParams.TOP,
+                LayoutParams.PARENT_ID,
+                LayoutParams.TOP,
+                context.pxFromDp(120f)
+            )
+            connect(
+                timerText.id,
+                LayoutParams.START,
+                LayoutParams.PARENT_ID,
+                LayoutParams.START,
+                context.pxFromDp(24f)
+            )
+            connect(
+                timerText.id,
+                LayoutParams.END,
+                LayoutParams.PARENT_ID,
+                LayoutParams.END,
+                context.pxFromDp(24f)
+            )
+        }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        handler.removeCallbacks(ticker)
+    }
+
+    override fun onCollapsedStart() {
+        playButton.visibility = INVISIBLE
+        resetButton.visibility = INVISIBLE
+    }
+
+    override fun onExpandedEnd() {
+        playButton.visibility = VISIBLE
+        resetButton.visibility = VISIBLE
+    }
+
+}
+````
+
+add to container
+
+````kotlin
+val timerStretchBar = StopwatchStretchBar(this)
+timerStretchBar.setBackgroundColor(Color.GREEN)
+
+binding.stack.addBar(timerStretchBar, false)
+````
+<p align="center">
+  <img src="Screenshot_1.png" width="300" />
+</p>
+
+### Other Apps
+
+#### Multi
+<p align="center">
+  <img src="screen_recording_1.gif" width="300" />
+</p>
+
+Open source application code: https://github.com/aboshekh/stretch-bar-app.git
+
+#### Audio player
+<p align="center">
+  <img src="screen_recording_audio_player.gif" width="300" />
+</p>
 
 ## 📂 Package Structure
 
