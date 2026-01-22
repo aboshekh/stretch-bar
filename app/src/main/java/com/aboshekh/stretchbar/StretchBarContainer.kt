@@ -1,5 +1,6 @@
 package com.aboshekh.stretchbar
 
+import android.Manifest
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
@@ -10,6 +11,7 @@ import android.os.VibratorManager
 import android.util.AttributeSet
 import android.view.*
 import android.view.animation.OvershootInterpolator
+import androidx.annotation.RequiresPermission
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.animation.doOnEnd
@@ -216,26 +218,24 @@ class StretchBarContainer @JvmOverloads constructor(
                 animateBottomMargin(topView, 0, StretchBar.DURATION)
             }
 
-
-
             return@setOnTouchListener true
         }
 
     }
 
-
-    fun addUnderBar(stretchBar: StretchBar, isAnimated: Boolean) {
+    @RequiresPermission(Manifest.permission.VIBRATE)
+    fun addBar(stretchBar: StretchBar, isAnimated: Boolean) {
 
         addToParentViewGroup(stretchBar)
 
-        if (isAnimated) addUnderBarAnimation(stretchBar)
+        if (isAnimated) applyAddAnimation(stretchBar)
 
         updateStackAppearance(isAnimated)
 
         if (isVibrate) context.vibrate(70L)
     }
 
-    private fun addUnderBarAnimation(stretchBar: StretchBar) {
+    private fun applyAddAnimation(stretchBar: StretchBar) {
 
         stretchBar.apply {
             alpha = 0f
@@ -256,10 +256,11 @@ class StretchBarContainer @JvmOverloads constructor(
 
     }
 
-    fun addUnderBars(vararg stretchBars: StretchBar, animated: Boolean) {
+    @RequiresPermission(Manifest.permission.VIBRATE)
+    fun addBars(vararg stretchBars: StretchBar, animated: Boolean) {
         stretchBars.forEach {
             addToParentViewGroup(it)
-            if (animated) addUnderBarAnimation(it)
+            if (animated) applyAddAnimation(it)
             if (isVibrate) context.vibrate(500L)
         }
         post { updateStackAppearance(animated) }
@@ -278,7 +279,7 @@ class StretchBarContainer @JvmOverloads constructor(
 
         addView(stretchBar)
 
-        collapsed(stretchBar)
+        applyCollapsed(stretchBar)
         stretchBar.onCollapsedEnd() // Because in first call don't call transition listener
 
     }
@@ -301,7 +302,7 @@ class StretchBarContainer @JvmOverloads constructor(
                 view.layoutParams = params
             }
 
-            view.visibility = View.VISIBLE
+            view.visibility = VISIBLE
             view.scaleX = 1f
             view.scaleY = 1f
             view.translationY = 0f
@@ -334,7 +335,7 @@ class StretchBarContainer @JvmOverloads constructor(
 
     fun changeFocusToNext(duration: Long) {
         val topView = getViewOntTop() ?: return
-        animateBottomMargin(topView, collapsedStackHeight.toInt(), duration) {
+        animateBottomMargin(topView, collapsedStackHeight, duration) {
             moveChildToBack(topView)
             post { updateStackAppearance() }
         }
@@ -347,15 +348,21 @@ class StretchBarContainer @JvmOverloads constructor(
     }
 
 
-    fun expandUnderBar(stretchBar: StretchBar) {
-        if (stretchBar.currentState == StretchBar.COLLAPSED_STATE) expand(stretchBar)
+    /**
+     * Expand the Bar if it is collapsed
+     * */
+    fun expand(stretchBar: StretchBar) {
+        if (stretchBar.currentState == StretchBar.COLLAPSED_STATE) applyExpand(stretchBar)
     }
 
-    private fun expand(stretchBar: StretchBar) {
+    /**
+     * Expand the Bar without checking the current state
+     * */
+    private fun applyExpand(stretchBar: StretchBar) {
 
         TransitionManager.beginDelayedTransition(this, stretchBar.transition)
 
-        // apply underBar's root changes
+        // apply Bar's root changes
         val layoutSet = ConstraintSet()
         layoutSet.clone(this)
         layoutSet.constrainWidth(stretchBar.id, context.getAvailableScreenWidth())
@@ -391,7 +398,7 @@ class StretchBarContainer @JvmOverloads constructor(
         )
         layoutSet.applyTo(this)
 
-        // apply underBar's children changes
+        // apply Bar's children changes
         stretchBar.expandedConstraintSet.applyTo(stretchBar)
 
         // change radius & state
@@ -399,15 +406,15 @@ class StretchBarContainer @JvmOverloads constructor(
 
     }
 
-    fun collapsedUnderBar(stretchBar: StretchBar) {
-        if (stretchBar.currentState == StretchBar.EXPANDED_STATE) collapsed(stretchBar)
+    fun collapsed(stretchBar: StretchBar) {
+        if (stretchBar.currentState == StretchBar.EXPANDED_STATE) applyCollapsed(stretchBar)
     }
 
-    private fun collapsed(stretchBar: StretchBar) {
+    private fun applyCollapsed(stretchBar: StretchBar) {
 
         TransitionManager.beginDelayedTransition(this, stretchBar.transition)
 
-        // apply underBar's root changes
+        // apply Bar's root changes
         val layoutSet = ConstraintSet()
         layoutSet.clone(this)
         layoutSet.constrainWidth(stretchBar.id, LayoutParams.MATCH_PARENT)
@@ -433,7 +440,7 @@ class StretchBarContainer @JvmOverloads constructor(
         )
         layoutSet.applyTo(this)
 
-        // apply underBar's children changes
+        // apply Bar's children changes
         stretchBar.collapsedConstraintSet.applyTo(stretchBar)
 
         // change radius & state
@@ -443,12 +450,12 @@ class StretchBarContainer @JvmOverloads constructor(
     }
 
 
-    fun expandUnderBarInFocus() {
-        expandUnderBar(getViewOntTop() ?: return)
+    fun expandBarInFocus() {
+        expand(getViewOntTop() ?: return)
     }
 
-    fun collapsedUnderBarInFocus() {
-        collapsedUnderBar(getViewOntTop() ?: return)
+    fun collapsedBarInFocus() {
+        collapsed(getViewOntTop() ?: return)
     }
 
     fun getViewOntTop(): StretchBar? = children.lastOrNull() as? StretchBar
@@ -456,20 +463,20 @@ class StretchBarContainer @JvmOverloads constructor(
     fun getViewBehindTop(): StretchBar? =
         if (childCount >= 2) children.toList()[childCount - 2] as? StretchBar else null
 
-    fun getUnderBarByPosition(position: Int): StretchBar? =
+    fun getBarByPosition(position: Int): StretchBar? =
         children.toList()[position] as? StretchBar
 
-    fun getUnderBarById(id: Int): StretchBar? = children.find { it.id == id } as? StretchBar
+    fun getBarById(id: Int): StretchBar? = children.find { it.id == id } as? StretchBar
 
-    fun removeUnderBar(stretchBar: StretchBar) {
+    fun removeBar(stretchBar: StretchBar) {
         removeView(stretchBar)
     }
 
-    fun hideUnderBar(stretchBar: StretchBar) {
-        stretchBar.visibility = View.GONE
+    fun hideBar(stretchBar: StretchBar) {
+        stretchBar.visibility = GONE
     }
 
-    fun showUnderBar(stretchBar: StretchBar) {
+    fun showBar(stretchBar: StretchBar) {
         stretchBar.visibility = View.VISIBLE
     }
 
@@ -552,7 +559,7 @@ class StretchBarContainer @JvmOverloads constructor(
     }
 
     private fun checkView(child: View?) {
-        if (child !is StretchBar) throw Exception("child must be UnderBar")
+        if (child !is StretchBar) throw Exception("child must be Bar")
     }
 
     override fun removeView(view: View?) {
@@ -561,6 +568,7 @@ class StretchBarContainer @JvmOverloads constructor(
         super.removeView(view)
     }
 
+    @RequiresPermission(Manifest.permission.VIBRATE)
     @Suppress("DEPRECATION")
     private fun Context.vibrate(milliseconds: Long) {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -577,6 +585,4 @@ class StretchBarContainer @JvmOverloads constructor(
             )
         )
     }
-
 }
-

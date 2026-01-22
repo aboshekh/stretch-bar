@@ -117,7 +117,7 @@ abstract class StretchBar(
      */
     open fun onSwipeUp() {
         if (currentState == COLLAPSED_STATE)
-            (parent as StretchBarContainer).expandUnderBar(this)
+            (parent as StretchBarContainer).expand(this)
     }
 
     /**
@@ -126,7 +126,7 @@ abstract class StretchBar(
      */
     open fun onSwipeDown() {
         if (currentState == EXPANDED_STATE)
-            (parent as StretchBarContainer).collapsedUnderBar(this)
+            (parent as StretchBarContainer).collapsed(this)
     }
 
     /**
@@ -135,7 +135,7 @@ abstract class StretchBar(
      */
     open fun onRootSingleTap() {
         if (currentState == COLLAPSED_STATE)
-            (parent as StretchBarContainer).expandUnderBar(this)
+            (parent as StretchBarContainer).expand(this)
     }
 
 
