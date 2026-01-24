@@ -46,7 +46,7 @@ dependencyResolutionManagement {
 ### 2️⃣ implementation
 
 ````kotlin
-implementation 'com.github.aboshekh:stretch-bar:Tag'
+implementation 'com.github.aboshekh:stretch-bar:v1.0.2'
 ````
 
 ## 🧱 Core Components
